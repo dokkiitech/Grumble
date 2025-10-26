@@ -152,7 +152,7 @@ EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
 ```
-
+[環境変数の取得](https://www.notion.so/2986fd82d1ce800a8aa1f371fd08549b?source=copy_link)
 ### 環境変数
 
 `src/constants/config.ts` でAPI URLを設定:
