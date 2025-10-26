@@ -18,6 +18,7 @@ interface UserState {
   signInAnonymously: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<void>;
+  upgradeAnonymousAccount: (email: string, password: string) => Promise<void>;
   fetchUser: () => Promise<void>;
   logout: () => Promise<void>;
   setFirebaseUser: (user: User | null) => void;
@@ -160,6 +161,39 @@ export const useUserStore = create<UserState>((set, get) => ({
     } catch (error: any) {
       const errorMessage = authService.getErrorMessage(error);
       console.error('Email sign up failed:', error);
+      set({ error: errorMessage, isLoading: false });
+      throw error;
+    }
+  },
+
+  upgradeAnonymousAccount: async (email: string, password: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const firebaseUser = await authService.upgradeAnonymousAccount(email, password);
+
+      // Firebase ID Tokenを更新
+      const idToken = await authService.getIdToken(true);
+      if (idToken) {
+        apiClient.setAuthToken(idToken);
+      }
+
+      // バックエンドからユーザー情報を取得（バックエンドが無い場合はスキップ）
+      let user = null;
+      try {
+        user = await userService.getMyProfile();
+      } catch (apiError) {
+        console.log('Backend API not available, continuing without user profile');
+      }
+
+      set({
+        firebaseUser,
+        user,
+        isAuthenticated: true,
+        isLoading: false
+      });
+    } catch (error: any) {
+      const errorMessage = authService.getErrorMessage(error);
+      console.error('Account upgrade failed:', error);
       set({ error: errorMessage, isLoading: false });
       throw error;
     }

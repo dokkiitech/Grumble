@@ -8,6 +8,8 @@ import {
   User,
   onAuthStateChanged,
   AuthError,
+  EmailAuthProvider,
+  linkWithCredential,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
@@ -53,6 +55,33 @@ class AuthService {
       return userCredential.user;
     } catch (error) {
       console.error('Email sign up failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 匿名アカウントをメールアカウントにアップグレード
+   */
+  async upgradeAnonymousAccount(email: string, password: string): Promise<User> {
+    try {
+      const user = this.getCurrentUser();
+      if (!user) {
+        throw new Error('ユーザーが認証されていません');
+      }
+
+      if (!user.isAnonymous) {
+        throw new Error('このアカウントは既にメールアカウントです');
+      }
+
+      // メール認証情報を作成
+      const credential = EmailAuthProvider.credential(email, password);
+
+      // 匿名アカウントにメール認証をリンク
+      const userCredential = await linkWithCredential(user, credential);
+
+      return userCredential.user;
+    } catch (error) {
+      console.error('Account upgrade failed:', error);
       throw error;
     }
   }
