@@ -11,6 +11,7 @@ export interface TimelineParams {
   toxic_level_min?: number;
   toxic_level_max?: number;
   unpurified_only?: boolean;
+  user_id?: string; // 特定ユーザーの投稿のみ取得
   limit?: number;
   offset?: number;
 }
@@ -27,6 +28,7 @@ class GrumbleService {
         toxicLevelMin: params.toxic_level_min,
         toxicLevelMax: params.toxic_level_max,
         isPurified: params.unpurified_only === true ? false : undefined,
+        userId: params.user_id,
         limit: params.limit,
         offset: params.offset,
       });

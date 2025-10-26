@@ -1,7 +1,7 @@
 import { GrumbleResponse, GrumbleItem, CreateGrumbleRequest } from '../services/grumble.service';
 import { EventItem } from '../services/event.service';
 import { UserResponse } from '../services/user.service';
-import { mockGrumbles, mockEvents, mockUser, addMockGrumble, toggleMockVibe } from './data';
+import { mockGrumbles, mockEvents, mockUser, addMockGrumble, toggleMockVibe, MOCK_CURRENT_USER_ID } from './data';
 
 // Mock Grumble Service
 export const mockGrumbleService = {
@@ -9,11 +9,19 @@ export const mockGrumbleService = {
     toxicLevelMin?: number;
     toxicLevelMax?: number;
     isPurified?: boolean;
+    userId?: string; // 自分の投稿のみフィルター
     limit?: number;
     offset?: number;
   } = {}): Promise<GrumbleResponse> {
     // フィルタリングを適用
     let filteredGrumbles = [...mockGrumbles];
+
+    // ユーザーIDでフィルター（自分の投稿のみ表示）
+    if (params.userId !== undefined) {
+      filteredGrumbles = filteredGrumbles.filter(
+        (g) => g.user_id === params.userId
+      );
+    }
 
     if (params.toxicLevelMin !== undefined) {
       filteredGrumbles = filteredGrumbles.filter(

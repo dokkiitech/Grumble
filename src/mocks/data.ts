@@ -2,11 +2,14 @@ import { GrumbleItem } from '../services/grumble.service';
 import { EventItem } from '../services/event.service';
 import { UserResponse } from '../services/user.service';
 
+// 現在のユーザーID（Mockモード用）
+export const MOCK_CURRENT_USER_ID = 'mock-current-user';
+
 // Mock投稿データ（DB設計に基づく）
 export const mockGrumbles: GrumbleItem[] = [
   {
     grumble_id: '1',
-    user_id: 'mock-user-1',
+    user_id: MOCK_CURRENT_USER_ID,
     content: '今日の会議、3時間も何の結論も出なかった...時間返して欲しい',
     toxic_level: 3,
     vibe_count: 42,
@@ -42,7 +45,7 @@ export const mockGrumbles: GrumbleItem[] = [
   },
   {
     grumble_id: '4',
-    user_id: 'mock-user-4',
+    user_id: MOCK_CURRENT_USER_ID,
     content: '上司の理不尽な指示。昨日と真逆のこと言ってるんだけど!?メモ取ってるのに意味ない',
     toxic_level: 4,
     vibe_count: 67,
@@ -142,7 +145,7 @@ export const mockEvents: EventItem[] = [
 
 // Mockユーザーデータ
 export const mockUser: UserResponse = {
-  user_id: 'mock-current-user',
+  user_id: MOCK_CURRENT_USER_ID,
   virtue_points: 42,
   created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(), // 30日前
   profile_title: '愚痴の聞き手',
@@ -152,7 +155,7 @@ export const mockUser: UserResponse = {
 export const addMockGrumble = (content: string, toxicLevel: number): GrumbleItem => {
   const newGrumble: GrumbleItem = {
     grumble_id: `mock-${Date.now()}`,
-    user_id: 'mock-current-user',
+    user_id: MOCK_CURRENT_USER_ID,
     content,
     toxic_level: toxicLevel,
     vibe_count: 0,

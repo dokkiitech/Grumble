@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useUserStore } from '../../src/stores/userStore';
+import { useUserStore } from '../src/stores/userStore';
 import { Colors } from '@/constants/theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
