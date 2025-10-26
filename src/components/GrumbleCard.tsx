@@ -66,7 +66,7 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress }
               <IconSymbol
                 name="hand.thumbsup.fill"
                 size={20}
-                color={grumble.has_vibed ? '#4CAF50' : '#666'}
+                color={grumble.has_vibed ? '#FF5722' : '#666'}
               />
               <Text style={[styles.vibeText, grumble.has_vibed && styles.vibeTextActive]}>
                 わかる…
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   vibeButtonActive: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: '#FFEBEE',
   },
   vibeText: {
     fontSize: 14,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   vibeTextActive: {
-    color: '#4CAF50',
+    color: '#FF5722',
     fontWeight: '600',
   },
   vibeCount: {
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   vibeCountActive: {
-    color: '#4CAF50',
+    color: '#FF5722',
   },
   purifiedBadge: {
     flexDirection: 'row',
