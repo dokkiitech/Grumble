@@ -1,6 +1,14 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth, initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import {
+  getAuth,
+  Auth,
+  initializeAuth,
+  getReactNativePersistence,
+  browserLocalPersistence,
+  indexedDBLocalPersistence,
+} from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 // Firebase設定
 // TODO: Firebase Consoleから取得した設定に置き換えてください
@@ -20,10 +28,18 @@ let auth: Auth;
 if (getApps().length === 0) {
   app = initializeApp(firebaseConfig);
 
-  // React Native用の永続化を設定
-  auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage)
-  });
+  // プラットフォームに応じた永続化設定
+  if (Platform.OS === 'web') {
+    // Web環境ではブラウザの永続化を使用
+    auth = initializeAuth(app, {
+      persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+    });
+  } else {
+    // React Native環境ではAsyncStorageを使用
+    auth = initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
+  }
 } else {
   app = getApps()[0];
   auth = getAuth(app);
