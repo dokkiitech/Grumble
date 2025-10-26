@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { GrumbleItem } from '../services/grumble.service';
 import { TOXIC_LEVEL_LABELS } from '../constants/config';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import * as Haptics from 'expo-haptics';
+import { VibeAnimation } from './VibeAnimation';
 
 interface GrumbleCardProps {
   grumble: GrumbleItem;
@@ -11,11 +12,18 @@ interface GrumbleCardProps {
 }
 
 export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress }) => {
+  const [showAnimation, setShowAnimation] = useState(false);
+
   const handleVibePress = () => {
     if (!grumble.has_vibed) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      setShowAnimation(true);
       onVibePress(grumble.grumble_id);
     }
+  };
+
+  const handleAnimationComplete = () => {
+    setShowAnimation(false);
   };
 
   const getToxicLevelColor = (level: number) => {
@@ -49,23 +57,26 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress }
 
         {/* フッター */}
         <View style={styles.footer}>
-          <Pressable
-            style={[styles.vibeButton, grumble.has_vibed && styles.vibeButtonActive]}
-            onPress={handleVibePress}
-            disabled={grumble.has_vibed}
-          >
-            <IconSymbol
-              name="hand.thumbsup.fill"
-              size={20}
-              color={grumble.has_vibed ? '#4CAF50' : '#666'}
-            />
-            <Text style={[styles.vibeText, grumble.has_vibed && styles.vibeTextActive]}>
-              わかる…
-            </Text>
-            <Text style={[styles.vibeCount, grumble.has_vibed && styles.vibeCountActive]}>
-              {grumble.vibe_count}
-            </Text>
-          </Pressable>
+          <View style={styles.vibeButtonContainer}>
+            <Pressable
+              style={[styles.vibeButton, grumble.has_vibed && styles.vibeButtonActive]}
+              onPress={handleVibePress}
+              disabled={grumble.has_vibed}
+            >
+              <IconSymbol
+                name="hand.thumbsup.fill"
+                size={20}
+                color={grumble.has_vibed ? '#FF5722' : '#666'}
+              />
+              <Text style={[styles.vibeText, grumble.has_vibed && styles.vibeTextActive]}>
+                わかる…
+              </Text>
+              <Text style={[styles.vibeCount, grumble.has_vibed && styles.vibeCountActive]}>
+                {grumble.vibe_count}
+              </Text>
+            </Pressable>
+            {showAnimation && <VibeAnimation onComplete={handleAnimationComplete} />}
+          </View>
 
           {grumble.is_purified && (
             <View style={styles.purifiedBadge}>
@@ -126,6 +137,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  vibeButtonContainer: {
+    position: 'relative',
+  },
   vibeButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -135,7 +149,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   vibeButtonActive: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: '#FFEBEE',
   },
   vibeText: {
     fontSize: 14,
@@ -143,7 +157,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   vibeTextActive: {
-    color: '#4CAF50',
+    color: '#FF5722',
     fontWeight: '600',
   },
   vibeCount: {
@@ -153,7 +167,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   vibeCountActive: {
-    color: '#4CAF50',
+    color: '#FF5722',
   },
   purifiedBadge: {
     flexDirection: 'row',
