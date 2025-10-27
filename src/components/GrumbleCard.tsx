@@ -6,6 +6,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import * as Haptics from 'expo-haptics';
 import { VibeAnimation } from './VibeAnimation';
 import { JobutsuAnimation } from './JobutsuAnimation';
+import { AppFonts } from '@/constants/theme';
 
 interface GrumbleCardProps {
   grumble: GrumbleItem;
@@ -182,6 +183,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: '#333',
     marginBottom: 12,
+    fontFamily: AppFonts.regular,
   },
   footer: {
     flexDirection: 'row',

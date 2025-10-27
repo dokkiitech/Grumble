@@ -51,3 +51,15 @@ export const Fonts = Platform.select({
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });
+
+// Kaisei Decol フォントファミリー
+export const AppFonts = {
+  regular: 'KaiseiDecol-Regular',
+  medium: 'KaiseiDecol-Medium',
+  bold: 'KaiseiDecol-Bold',
+};
+
+// デフォルトのテキストスタイル
+export const defaultTextStyle = {
+  fontFamily: AppFonts.regular,
+};
