@@ -26,9 +26,22 @@ export default function AccountScreen() {
     ? MOCK_CURRENT_USER_ID
     : user?.user_id;
 
+  // 統計情報用：全投稿を取得
+  const { data: allGrumblesData } = useQuery({
+    queryKey: ['my-all-grumbles', currentUserId],
+    queryFn: () => grumbleService.getTimeline({
+      user_id: currentUserId,
+    }),
+    enabled: isAuthenticated && !!currentUserId,
+  });
+
+  // 表示用：未成仏の投稿のみ取得
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['my-grumbles', currentUserId],
-    queryFn: () => grumbleService.getTimeline({ user_id: currentUserId }),
+    queryFn: () => grumbleService.getTimeline({
+      user_id: currentUserId,
+      unpurified_only: true // 未成仏の投稿のみ表示
+    }),
     enabled: isAuthenticated && !!currentUserId,
   });
 
@@ -42,6 +55,10 @@ export default function AccountScreen() {
     router.push('/settings');
   };
 
+  const handlePurifiedPress = () => {
+    router.push('/purified-grumbles');
+  };
+
   const handleVibePress = async (grumbleId: string) => {
     try {
       await grumbleService.addVibe(grumbleId);
@@ -52,9 +69,10 @@ export default function AccountScreen() {
   };
 
   const grumbles = data?.grumbles || [];
-  const totalGrumbles = grumbles.length;
-  const purifiedCount = grumbles.filter((g) => g.is_purified).length;
-  const totalVibes = grumbles.reduce((sum, g) => sum + g.vibe_count, 0);
+  const allGrumbles = allGrumblesData?.grumbles || [];
+  const totalGrumbles = allGrumbles.length;
+  const purifiedCount = allGrumbles.filter((g) => g.is_purified).length;
+  const totalVibes = allGrumbles.reduce((sum, g) => sum + g.vibe_count, 0);
 
   return (
     <View style={styles.container}>
@@ -89,10 +107,15 @@ export default function AccountScreen() {
             <Text style={styles.statLabel}>投稿</Text>
           </View>
           <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{purifiedCount}</Text>
-            <Text style={styles.statLabel}>成仏済み</Text>
-          </View>
+          <TouchableOpacity
+            style={styles.statItem}
+            onPress={handlePurifiedPress}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.statValue, styles.statValueLink]}>{purifiedCount}</Text>
+            <Text style={[styles.statLabel, styles.statLabelLink]}>成仏済み</Text>
+            <IconSymbol name="chevron.right" size={12} color="#FF5722" style={styles.statChevron} />
+          </TouchableOpacity>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{totalVibes}</Text>
@@ -203,16 +226,27 @@ const styles = StyleSheet.create({
   statItem: {
     alignItems: 'center',
     flex: 1,
+    position: 'relative',
   },
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
     color: Colors.light.tint,
   },
+  statValueLink: {
+    color: '#FF5722',
+  },
   statLabel: {
     fontSize: 12,
     color: '#666',
     marginTop: 4,
+  },
+  statLabelLink: {
+    color: '#FF5722',
+    fontWeight: '600',
+  },
+  statChevron: {
+    marginTop: 2,
   },
   statDivider: {
     width: 1,
