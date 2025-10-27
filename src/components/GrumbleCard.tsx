@@ -31,12 +31,15 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, 
   };
 
   const handleJobutsuPress = () => {
-    if (!grumble.is_purified) {
+    if (!grumble.is_purified && grumble.vibe_count >= 10) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setShowJobutsuAnimation(true);
       setIsRemoving(true);
     }
   };
+
+  // 成仏ボタンを押せるかどうか
+  const canJobutsu = !grumble.is_purified && grumble.vibe_count >= 10;
 
   const handleJobutsuComplete = () => {
     setShowJobutsuAnimation(false);
@@ -112,11 +115,24 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, 
             </View>
           ) : (
             <Pressable
-              style={styles.jobutsuButton}
+              style={[
+                styles.jobutsuButton,
+                !canJobutsu && styles.jobutsuButtonDisabled
+              ]}
               onPress={handleJobutsuPress}
+              disabled={!canJobutsu}
             >
-              <IconSymbol name="flame.fill" size={18} color="#FF5722" />
-              <Text style={styles.jobutsuButtonText}>成仏させる</Text>
+              <IconSymbol
+                name="flame.fill"
+                size={18}
+                color={canJobutsu ? "#FF5722" : "#CCC"}
+              />
+              <Text style={[
+                styles.jobutsuButtonText,
+                !canJobutsu && styles.jobutsuButtonTextDisabled
+              ]}>
+                成仏させる {!canJobutsu && `(${grumble.vibe_count}/10)`}
+              </Text>
             </Pressable>
           )}
         </View>
@@ -227,9 +243,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFEBEE',
     gap: 4,
   },
+  jobutsuButtonDisabled: {
+    backgroundColor: '#F5F5F5',
+    opacity: 0.6,
+  },
   jobutsuButtonText: {
     fontSize: 12,
     color: '#FF5722',
     fontWeight: '600',
+  },
+  jobutsuButtonTextDisabled: {
+    color: '#999',
   },
 });
