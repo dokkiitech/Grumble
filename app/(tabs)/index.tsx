@@ -51,6 +51,18 @@ export default function TimelineScreen() {
     vibeMutation.mutate(grumbleId);
   }, []);
 
+  // 成仏処理
+  const handleJobutsu = useCallback((grumbleId: string) => {
+    // タイムラインから該当のカードを削除
+    queryClient.setQueryData(['timeline', filter], (oldData: any) => {
+      if (!oldData) return oldData;
+      return {
+        ...oldData,
+        grumbles: oldData.grumbles.filter((g: GrumbleItem) => g.grumble_id !== grumbleId),
+      };
+    });
+  }, [filter, queryClient]);
+
   const handleRefresh = useCallback(() => {
     refetch();
   }, []);
@@ -65,8 +77,8 @@ export default function TimelineScreen() {
   }, [filter]);
 
   const renderGrumble = useCallback(({ item }: { item: GrumbleItem }) => (
-    <GrumbleCard grumble={item} onVibePress={handleVibePress} />
-  ), [handleVibePress]);
+    <GrumbleCard grumble={item} onVibePress={handleVibePress} onJobutsu={handleJobutsu} />
+  ), [handleVibePress, handleJobutsu]);
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>

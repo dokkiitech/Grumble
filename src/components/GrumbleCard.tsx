@@ -5,14 +5,18 @@ import { TOXIC_LEVEL_LABELS } from '../constants/config';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import * as Haptics from 'expo-haptics';
 import { VibeAnimation } from './VibeAnimation';
+import { JobutsuAnimation } from './JobutsuAnimation';
 
 interface GrumbleCardProps {
   grumble: GrumbleItem;
   onVibePress: (grumbleId: string) => void;
+  onJobutsu?: (grumbleId: string) => void;
 }
 
-export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress }) => {
+export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, onJobutsu }) => {
   const [showAnimation, setShowAnimation] = useState(false);
+  const [showJobutsuAnimation, setShowJobutsuAnimation] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
 
   const handleVibePress = () => {
     if (!grumble.has_vibed) {
@@ -26,13 +30,36 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress }
     setShowAnimation(false);
   };
 
+  const handleJobutsuPress = () => {
+    if (!grumble.is_purified) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setShowJobutsuAnimation(true);
+      setIsRemoving(true);
+    }
+  };
+
+  const handleJobutsuComplete = () => {
+    setShowJobutsuAnimation(false);
+    onJobutsu?.(grumble.grumble_id);
+  };
+
   const getToxicLevelColor = (level: number) => {
     const colors = ['#4CAF50', '#8BC34A', '#FFC107', '#FF9800', '#F44336'];
     return colors[level - 1] || '#9E9E9E';
   };
 
+  // アニメーション中は非表示にする
+  if (isRemoving && !showJobutsuAnimation) {
+    return null;
+  }
+
   return (
     <View style={styles.card}>
+      {/* 成仏アニメーション */}
+      {showJobutsuAnimation && (
+        <JobutsuAnimation onComplete={handleJobutsuComplete} />
+      )}
+
       {/* 毒レベルインジケーター */}
       <View style={[styles.toxicIndicator, { backgroundColor: getToxicLevelColor(grumble.toxic_level) }]} />
 
@@ -78,11 +105,19 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress }
             {showAnimation && <VibeAnimation onComplete={handleAnimationComplete} />}
           </View>
 
-          {grumble.is_purified && (
+          {grumble.is_purified ? (
             <View style={styles.purifiedBadge}>
               <IconSymbol name="checkmark.seal.fill" size={16} color="#4CAF50" />
               <Text style={styles.purifiedText}>成仏済み</Text>
             </View>
+          ) : (
+            <Pressable
+              style={styles.jobutsuButton}
+              onPress={handleJobutsuPress}
+            >
+              <IconSymbol name="flame.fill" size={18} color="#FF5722" />
+              <Text style={styles.jobutsuButtonText}>成仏させる</Text>
+            </Pressable>
           )}
         </View>
       </View>
@@ -181,6 +216,20 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#4CAF50',
     marginLeft: 4,
+    fontWeight: '600',
+  },
+  jobutsuButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#FFEBEE',
+    gap: 4,
+  },
+  jobutsuButtonText: {
+    fontSize: 12,
+    color: '#FF5722',
     fontWeight: '600',
   },
 });
