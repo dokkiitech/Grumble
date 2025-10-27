@@ -171,6 +171,109 @@ OpenAPIスキーマから型を自動生成:
 npx openapi-typescript openapi.yaml -o src/types/api.ts
 ```
 
+## 🚀 EASビルド
+
+### 初回セットアップ
+
+```bash
+# EAS CLIのインストール（グローバル）
+npm install -g eas-cli
+
+# Expoアカウントでログイン
+eas login
+
+# プロジェクトの初期化（初回のみ）
+eas build:configure
+```
+
+### 環境変数の設定
+
+EASビルドで使用する環境変数を設定:
+
+```bash
+# Firebase設定をEASシークレットに追加
+eas secret:create --scope project --name EXPO_PUBLIC_FIREBASE_API_KEY --value "your-api-key"
+eas secret:create --scope project --name EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN --value "your-project.firebaseapp.com"
+eas secret:create --scope project --name EXPO_PUBLIC_FIREBASE_PROJECT_ID --value "your-project-id"
+eas secret:create --scope project --name EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET --value "your-project.firebasestorage.app"
+eas secret:create --scope project --name EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID --value "your-sender-id"
+eas secret:create --scope project --name EXPO_PUBLIC_FIREBASE_APP_ID --value "your-app-id"
+eas secret:create --scope project --name EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID --value "your-measurement-id"
+
+# 本番環境用（Mock APIを無効化）
+eas secret:create --scope project --name EXPO_PUBLIC_USE_MOCK_API --value "false"
+
+# 環境変数の確認
+eas secret:list
+```
+
+### ビルドコマンド
+
+```bash
+# 開発ビルド（開発用、Mock API有効）
+eas build --profile development --platform ios
+eas build --profile development --platform android
+
+# プレビュービルド（内部テスト用、Mock API有効）
+eas build --profile preview --platform ios
+eas build --profile preview --platform android
+
+# 本番ビルド（ストア提出用、ビルド番号自動インクリメント）
+eas build --profile production --platform ios
+eas build --profile production --platform android
+
+# 両プラットフォーム同時ビルド
+eas build --profile production --platform all
+```
+
+### ビルド番号の自動インクリメント
+
+本番ビルド（`production`プロファイル）では、ビルド番号が自動的にインクリメントされます:
+
+- **iOS**: `buildNumber` が自動的に増加
+- **Android**: `versionCode` が自動的に増加
+
+`eas.json`の設定:
+```json
+{
+  "build": {
+    "production": {
+      "autoIncrement": true
+    }
+  }
+}
+```
+
+### アプリの配信
+
+```bash
+# 内部テストユーザーに配信
+eas build --profile preview --platform ios
+eas build --profile preview --platform android
+
+# App Store / Google Play にサブミット
+eas submit --platform ios
+eas submit --platform android
+```
+
+### app.jsonの必須設定
+
+ビルド前に`app.json`の以下の項目を更新してください:
+
+```json
+{
+  "expo": {
+    "owner": "your-expo-username",  // Expoユーザー名に変更
+    "ios": {
+      "bundleIdentifier": "com.dokkiitech.grumble"
+    },
+    "android": {
+      "package": "com.dokkiitech.grumble"
+    }
+  }
+}
+```
+
 ## 🎨 デザインガイドライン
 
 ### 毒レベルカラー
