@@ -9,7 +9,16 @@ servers:
   - url: https://api.grumble.app/v1
     description: 本番環境
 
+security:
+  - FirebaseAuth: []
+
 components:
+  securitySchemes:
+    FirebaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     Grumble:
       type: object
@@ -191,10 +200,9 @@ components:
           minimum: 1
           maximum: 5
           description: 毒レベルの最大値
-        unpurified_only:
+        is_purified:
           type: boolean
-          default: false
-          description: 未成仏のみ表示
+          description: 成仏済みかどうかで絞り込み
         limit:
           type: integer
           minimum: 1
@@ -216,9 +224,11 @@ components:
         error:
           type: string
           description: エラーコード
+          example: "DUPLICATE_VIBE"
         message:
           type: string
           description: エラーメッセージ
+          example: "既にこの投稿に「わかる…」を送信しています"
 
 paths:
   /grumbles:
@@ -227,6 +237,13 @@ paths:
       description: 愚痴投稿を新しい順に取得
       operationId: getGrumbles
       parameters:
+        - name: user_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: 取得対象のユーザーID
+          required: false
         - name: toxic_level_min
           in: query
           schema:
@@ -239,11 +256,11 @@ paths:
             type: integer
             minimum: 1
             maximum: 5
-        - name: unpurified_only
+        - name: is_purified
           in: query
           schema:
             type: boolean
-            default: false
+          description: 成仏済みかどうかで絞り込み
         - name: limit
           in: query
           schema:
@@ -272,6 +289,12 @@ paths:
                   total:
                     type: integer
                     description: 総件数
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '400':
           description: リクエストエラー
           content:
@@ -296,6 +319,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Grumble'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '400':
           description: リクエストエラー
           content:
@@ -334,13 +363,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/Vibe'
         '400':
-          description: リクエストエラー（既に押済みなど）
+          description: リクエストエラー（バリデーションエラーなど）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 認証エラー
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: 投稿が見つからない
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 既にvibeを送信済み（競合）
           content:
             application/json:
               schema:
@@ -358,6 +399,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AnonymousUser'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /events:
     get:
@@ -382,6 +429,12 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Event'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /events/{event_id}:
     get:
@@ -401,6 +454,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Event'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: イベントが見つからない
           content:

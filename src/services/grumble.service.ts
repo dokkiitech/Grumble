@@ -10,7 +10,7 @@ type CreateGrumbleResponse = paths['/grumbles']['post']['responses']['201']['con
 export interface TimelineParams {
   toxic_level_min?: number;
   toxic_level_max?: number;
-  unpurified_only?: boolean;
+  is_purified?: boolean; // 成仏済みかどうかで絞り込み
   user_id?: string; // 特定ユーザーの投稿のみ取得
   limit?: number;
   offset?: number;
@@ -27,7 +27,7 @@ class GrumbleService {
       return mockGrumbleService.getTimeline({
         toxicLevelMin: params.toxic_level_min,
         toxicLevelMax: params.toxic_level_max,
-        isPurified: params.unpurified_only === true ? false : undefined,
+        isPurified: params.is_purified,
         userId: params.user_id,
         limit: params.limit,
         offset: params.offset,

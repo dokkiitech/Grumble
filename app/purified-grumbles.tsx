@@ -32,14 +32,9 @@ export default function PurifiedGrumblesScreen() {
     queryKey: ['purified-grumbles', currentUserId],
     queryFn: () => grumbleService.getTimeline({
       user_id: currentUserId,
-      unpurified_only: false // すべて取得してフィルタリング
+      is_purified: true // 成仏済みのみ取得
     }),
     enabled: isAuthenticated && !!currentUserId,
-    select: (data) => ({
-      ...data,
-      // 成仏済みのみフィルタリング
-      grumbles: data?.grumbles?.filter((g: GrumbleItem) => g.is_purified) || []
-    }),
   });
 
   const onRefresh = async () => {

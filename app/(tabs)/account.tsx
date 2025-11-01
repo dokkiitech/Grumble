@@ -41,7 +41,7 @@ export default function AccountScreen() {
     queryKey: ['my-grumbles', currentUserId],
     queryFn: () => grumbleService.getTimeline({
       user_id: currentUserId,
-      unpurified_only: true // 未成仏の投稿のみ表示
+      is_purified: false // 未成仏の投稿のみ表示
     }),
     enabled: isAuthenticated && !!currentUserId,
   });

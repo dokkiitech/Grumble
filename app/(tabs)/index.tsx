@@ -24,7 +24,7 @@ export default function TimelineScreen() {
   const [filter, setFilter] = useState<TimelineParams>({
     limit: 20,
     offset: 0,
-    unpurified_only: false,
+    is_purified: undefined, // undefined = 全て表示
   });
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
@@ -123,18 +123,18 @@ export default function TimelineScreen() {
       {/* フィルターボタン */}
       <View style={styles.filterContainer}>
         <Pressable
-          style={[styles.filterButton, !filter.unpurified_only && styles.filterButtonActive]}
-          onPress={() => setFilter({ ...filter, unpurified_only: false, offset: 0 })}
+          style={[styles.filterButton, filter.is_purified === undefined && styles.filterButtonActive]}
+          onPress={() => setFilter({ ...filter, is_purified: undefined, offset: 0 })}
         >
-          <Text style={[styles.filterText, !filter.unpurified_only && styles.filterTextActive]}>
+          <Text style={[styles.filterText, filter.is_purified === undefined && styles.filterTextActive]}>
             すべて
           </Text>
         </Pressable>
         <Pressable
-          style={[styles.filterButton, filter.unpurified_only && styles.filterButtonActive]}
-          onPress={() => setFilter({ ...filter, unpurified_only: true, offset: 0 })}
+          style={[styles.filterButton, filter.is_purified === false && styles.filterButtonActive]}
+          onPress={() => setFilter({ ...filter, is_purified: false, offset: 0 })}
         >
-          <Text style={[styles.filterText, filter.unpurified_only && styles.filterTextActive]}>
+          <Text style={[styles.filterText, filter.is_purified === false && styles.filterTextActive]}>
             未成仏のみ
           </Text>
         </Pressable>
