@@ -50,7 +50,7 @@ export const mockGrumbleService = {
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     return {
-      grumbles: paginatedGrumbles,
+      grumbles: paginatedGrumbles.map(g => ({ ...g })), // 各オブジェクトをコピーして新しい参照を返す
       total: filteredGrumbles.length,
       limit,
       offset,

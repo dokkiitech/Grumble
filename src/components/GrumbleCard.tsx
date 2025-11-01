@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { GrumbleItem } from '../services/grumble.service';
-import { TOXIC_LEVEL_LABELS } from '../constants/config';
+import { TOXIC_LEVEL_LABELS, PURIFICATION_THRESHOLD } from '../constants/config';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import * as Haptics from 'expo-haptics';
 import { VibeAnimation } from './VibeAnimation';
@@ -12,14 +12,32 @@ interface GrumbleCardProps {
   grumble: GrumbleItem;
   onVibePress: (grumbleId: string) => void;
   onJobutsu?: (grumbleId: string) => void;
+  currentUserId?: string; // 現在のユーザーID
 }
 
-export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, onJobutsu }) => {
+export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, onJobutsu, currentUserId }) => {
   const [showAnimation, setShowAnimation] = useState(false);
   const [showJobutsuAnimation, setShowJobutsuAnimation] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
 
+  // 自分の投稿かどうか
+  const isOwnGrumble = currentUserId && grumble.user_id === currentUserId;
+
+  // わかるボタンを押せるかどうか（自分の投稿以外で、まだ押していない場合）
+  const canVibe = !isOwnGrumble && !grumble.has_vibed;
+
+  // 成仏ボタンを押せるかどうか（自分の投稿のみ）
+  const canJobutsu = isOwnGrumble && !grumble.is_purified && grumble.vibe_count >= PURIFICATION_THRESHOLD;
+
+  // 成仏ボタンを表示するかどうか（自分の投稿のみ）
+  const showJobutsuButton = isOwnGrumble && !grumble.is_purified;
+
   const handleVibePress = () => {
+    // 自分の投稿には「わかる…」を押せない
+    if (isOwnGrumble) {
+      return;
+    }
+
     if (!grumble.has_vibed) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setShowAnimation(true);
@@ -32,15 +50,12 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, 
   };
 
   const handleJobutsuPress = () => {
-    if (!grumble.is_purified && grumble.vibe_count >= 10) {
+    if (!grumble.is_purified && grumble.vibe_count >= PURIFICATION_THRESHOLD) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setShowJobutsuAnimation(true);
       setIsRemoving(true);
     }
   };
-
-  // 成仏ボタンを押せるかどうか
-  const canJobutsu = !grumble.is_purified && grumble.vibe_count >= 10;
 
   const handleJobutsuComplete = () => {
     setShowJobutsuAnimation(false);
@@ -90,19 +105,31 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, 
         <View style={styles.footer}>
           <View style={styles.vibeButtonContainer}>
             <Pressable
-              style={[styles.vibeButton, grumble.has_vibed && styles.vibeButtonActive]}
+              style={[
+                styles.vibeButton,
+                grumble.has_vibed && styles.vibeButtonActive,
+                isOwnGrumble && styles.vibeButtonDisabled
+              ]}
               onPress={handleVibePress}
-              disabled={grumble.has_vibed}
+              disabled={!canVibe}
             >
               <IconSymbol
                 name="hand.thumbsup.fill"
                 size={20}
-                color={grumble.has_vibed ? '#FF5722' : '#666'}
+                color={grumble.has_vibed ? '#FF3B30' : isOwnGrumble ? '#CCC' : '#666'}
               />
-              <Text style={[styles.vibeText, grumble.has_vibed && styles.vibeTextActive]}>
+              <Text style={[
+                styles.vibeText,
+                grumble.has_vibed && styles.vibeTextActive,
+                isOwnGrumble && styles.vibeTextDisabled
+              ]}>
                 わかる…
               </Text>
-              <Text style={[styles.vibeCount, grumble.has_vibed && styles.vibeCountActive]}>
+              <Text style={[
+                styles.vibeCount,
+                grumble.has_vibed && styles.vibeCountActive,
+                isOwnGrumble && styles.vibeCountDisabled
+              ]}>
                 {grumble.vibe_count}
               </Text>
             </Pressable>
@@ -114,7 +141,7 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, 
               <IconSymbol name="checkmark.seal.fill" size={16} color="#4CAF50" />
               <Text style={styles.purifiedText}>成仏済み</Text>
             </View>
-          ) : (
+          ) : showJobutsuButton ? (
             <Pressable
               style={[
                 styles.jobutsuButton,
@@ -132,10 +159,10 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, 
                 styles.jobutsuButtonText,
                 !canJobutsu && styles.jobutsuButtonTextDisabled
               ]}>
-                成仏させる {!canJobutsu && `(${grumble.vibe_count}/10)`}
+                成仏させる {!canJobutsu && `(${grumble.vibe_count}/${PURIFICATION_THRESHOLD})`}
               </Text>
             </Pressable>
-          )}
+          ) : null}
         </View>
       </View>
     </View>
@@ -202,7 +229,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   vibeButtonActive: {
-    backgroundColor: '#FFEBEE',
+    backgroundColor: '#FFE5E5',
+    borderWidth: 1,
+    borderColor: '#FF3B30',
+  },
+  vibeButtonDisabled: {
+    backgroundColor: '#F0F0F0',
+    opacity: 0.6,
   },
   vibeText: {
     fontSize: 14,
@@ -210,8 +243,11 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   vibeTextActive: {
-    color: '#FF5722',
-    fontWeight: '600',
+    color: '#FF3B30',
+    fontWeight: '700',
+  },
+  vibeTextDisabled: {
+    color: '#CCC',
   },
   vibeCount: {
     fontSize: 14,
@@ -220,7 +256,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   vibeCountActive: {
-    color: '#FF5722',
+    color: '#FF3B30',
+    fontWeight: '700',
+  },
+  vibeCountDisabled: {
+    color: '#CCC',
   },
   purifiedBadge: {
     flexDirection: 'row',

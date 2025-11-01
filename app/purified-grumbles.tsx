@@ -103,7 +103,11 @@ export default function PurifiedGrumblesScreen() {
           data={grumbles}
           keyExtractor={(item) => item.grumble_id}
           renderItem={({ item }) => (
-            <GrumbleCard grumble={item} onVibePress={handleVibePress} />
+            <GrumbleCard
+              grumble={item}
+              onVibePress={handleVibePress}
+              currentUserId={currentUserId}
+            />
           )}
           contentContainerStyle={styles.listContent}
           refreshControl={

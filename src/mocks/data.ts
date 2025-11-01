@@ -199,9 +199,9 @@ export const toggleMockVibe = (grumbleId: string): void => {
     grumble.has_vibed = true;
     grumble.vibe_count += 1;
 
-    // 50以上で成仏
-    if (grumble.vibe_count >= 50) {
-      grumble.is_purified = true;
-    }
+    // 自動成仏は実装しない（手動で成仏ボタンを押す必要がある）
+    // if (grumble.vibe_count >= PURIFICATION_THRESHOLD) {
+    //   grumble.is_purified = true;
+    // }
   }
 };

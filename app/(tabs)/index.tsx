@@ -20,7 +20,7 @@ import { useUserStore } from '@/src/stores/userStore';
 export default function TimelineScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { isAuthenticated } = useUserStore();
+  const { isAuthenticated, user } = useUserStore();
   const [filter, setFilter] = useState<TimelineParams>({
     limit: 20,
     offset: 0,
@@ -77,8 +77,13 @@ export default function TimelineScreen() {
   }, [filter]);
 
   const renderGrumble = useCallback(({ item }: { item: GrumbleItem }) => (
-    <GrumbleCard grumble={item} onVibePress={handleVibePress} onJobutsu={handleJobutsu} />
-  ), [handleVibePress, handleJobutsu]);
+    <GrumbleCard
+      grumble={item}
+      onVibePress={handleVibePress}
+      onJobutsu={handleJobutsu}
+      currentUserId={user?.user_id}
+    />
+  ), [handleVibePress, handleJobutsu, user?.user_id]);
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
