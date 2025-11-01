@@ -1,12 +1,11 @@
 // API設定
-export const API_BASE_URL = __DEV__
-  ? 'http://localhost:8080/api/v1'
-  : 'https://api.grumble.app/v1';
+// .env で指定したAPIサーバーのベースURLを使用
+// モックモード時はダミーURLでも問題ない（実際には接続しないため）
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 // WebSocket設定
-export const WS_BASE_URL = __DEV__
-  ? 'ws://localhost:8080/ws'
-  : 'wss://api.grumble.app/ws';
+// .env で指定したWebSocketサーバーのベースURLを使用
+export const WS_BASE_URL = process.env.EXPO_PUBLIC_WS_BASE_URL || 'ws://localhost:8080/ws';
 
 // アプリ設定
 export const MAX_GRUMBLE_LENGTH = 280;
