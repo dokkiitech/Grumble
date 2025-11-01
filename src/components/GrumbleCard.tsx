@@ -20,6 +20,14 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, 
   const [showJobutsuAnimation, setShowJobutsuAnimation] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
 
+  // デバッグ用ログ
+  console.log(`GrumbleCard ${grumble.grumble_id}:`, {
+    has_vibed: grumble.has_vibed,
+    vibe_count: grumble.vibe_count,
+    user_id: grumble.user_id,
+    currentUserId,
+  });
+
   // 自分の投稿かどうか
   const isOwnGrumble = currentUserId && grumble.user_id === currentUserId;
 

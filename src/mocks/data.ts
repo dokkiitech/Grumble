@@ -195,9 +195,11 @@ export const addMockGrumble = (content: string, toxicLevel: number): GrumbleItem
 
 export const toggleMockVibe = (grumbleId: string): void => {
   const grumble = mockGrumbles.find((g) => g.grumble_id === grumbleId);
+  console.log('toggleMockVibe called:', { grumbleId, found: !!grumble, has_vibed_before: grumble?.has_vibed });
   if (grumble && !grumble.has_vibed) {
     grumble.has_vibed = true;
     grumble.vibe_count += 1;
+    console.log('toggleMockVibe updated:', { grumbleId, has_vibed: grumble.has_vibed, vibe_count: grumble.vibe_count });
 
     // 自動成仏は実装しない（手動で成仏ボタンを押す必要がある）
     // if (grumble.vibe_count >= PURIFICATION_THRESHOLD) {
