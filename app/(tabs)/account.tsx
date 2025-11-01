@@ -80,18 +80,13 @@ export default function AccountScreen() {
       {/* ヘッダー */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <View style={styles.headerLeft}>
-            <View style={styles.avatarContainer}>
-              <IconSymbol name="person.circle.fill" size={64} color={Colors.light.tint} />
-            </View>
-            <View style={styles.userInfo}>
-              <Text style={styles.userName}>
-                {firebaseUser?.isAnonymous ? '匿名ユーザー' : firebaseUser?.email || 'ユーザー'}
-              </Text>
-              {user?.profile_title && (
-                <Text style={styles.userTitle}>{user.profile_title}</Text>
-              )}
-            </View>
+          <View style={styles.userInfo}>
+            <Text style={styles.userName}>
+              {firebaseUser?.isAnonymous ? '匿名ユーザー' : firebaseUser?.email || 'ユーザー'}
+            </Text>
+            {user?.profile_title && (
+              <Text style={styles.userTitle}>{user.profile_title}</Text>
+            )}
           </View>
           <TouchableOpacity
             style={styles.settingsButton}
@@ -194,17 +189,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     paddingHorizontal: 20,
     marginBottom: 20,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  avatarContainer: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
   userInfo: {
     gap: 4,
