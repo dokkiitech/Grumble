@@ -7,8 +7,10 @@ import {
   Alert,
   ScrollView,
   Pressable,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useUserStore } from '../src/stores/userStore';
 import { Colors } from '@/constants/theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -20,24 +22,34 @@ export default function SettingsScreen() {
   const isAnonymous = firebaseUser?.isAnonymous ?? false;
 
   const handleLogout = () => {
-    Alert.alert(
-      'ログアウト',
-      'ログアウトしてもよろしいですか？',
-      [
-        {
-          text: 'キャンセル',
-          style: 'cancel',
-        },
-        {
-          text: 'ログアウト',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/auth');
+    if (Platform.OS === 'web') {
+      // Web版では確認後即座にログアウト
+      const confirmed = window.confirm('ログアウトしてもよろしいですか？');
+      if (confirmed) {
+        logout();
+        router.replace('/auth');
+      }
+    } else {
+      // ネイティブ版ではAlert使用
+      Alert.alert(
+        'ログアウト',
+        'ログアウトしてもよろしいですか？',
+        [
+          {
+            text: 'キャンセル',
+            style: 'cancel',
           },
-        },
-      ]
-    );
+          {
+            text: 'ログアウト',
+            style: 'destructive',
+            onPress: async () => {
+              await logout();
+              router.replace('/auth');
+            },
+          },
+        ]
+      );
+    }
   };
 
   const handleUpgradeAccount = () => {
@@ -45,7 +57,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <Pressable
           style={styles.backButton}
@@ -148,7 +160,7 @@ export default function SettingsScreen() {
           </View>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -162,8 +174,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#FFF',
-    paddingTop: 60,
-    paddingBottom: 16,
+    paddingVertical: 16,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',

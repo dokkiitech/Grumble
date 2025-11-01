@@ -78,6 +78,27 @@ function RootNavigator() {
             headerShown: true
           }}
         />
+        <Stack.Screen
+          name="settings"
+          options={{
+            presentation: 'card',
+            title: '設定',
+          }}
+        />
+        <Stack.Screen
+          name="upgrade-account"
+          options={{
+            presentation: 'card',
+            title: 'アカウント登録',
+          }}
+        />
+        <Stack.Screen
+          name="purified-grumbles"
+          options={{
+            presentation: 'card',
+            title: '成仏済みの投稿',
+          }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

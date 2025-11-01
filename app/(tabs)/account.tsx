@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { grumbleService } from '../../src/services/grumble.service';
 import { useUserStore } from '../../src/stores/userStore';
@@ -75,7 +76,7 @@ export default function AccountScreen() {
   const totalVibes = allGrumbles.reduce((sum, g) => sum + g.vibe_count, 0);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* ヘッダー */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
@@ -168,7 +169,7 @@ export default function AccountScreen() {
           />
         )}
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -179,8 +180,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#FFF',
-    paddingTop: 60,
-    paddingBottom: 20,
+    paddingVertical: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
   },

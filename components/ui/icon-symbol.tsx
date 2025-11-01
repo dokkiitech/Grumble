@@ -18,6 +18,7 @@ const MAPPING = {
   'house.fill': 'home',
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
+  'chevron.left': 'chevron-left',
   'chevron.right': 'chevron-right',
 
   // App specific icons
@@ -45,6 +46,8 @@ const MAPPING = {
   'lock': 'lock',
   'sparkles': 'auto-awesome',
   'hand.thumbsup.fill': 'thumb-up',
+  'line.3.horizontal.decrease.circle': 'filter-list',
+  'line.3.horizontal.decrease.circle.fill': 'filter-list',
 } as IconMapping;
 
 /**

@@ -24,25 +24,38 @@ export default function UpgradeAccountScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const showAlert = (title: string, message: string, onOk?: () => void) => {
+    if (Platform.OS === 'web') {
+      window.alert(`${title}\n\n${message}`);
+      onOk?.();
+    } else {
+      if (onOk) {
+        Alert.alert(title, message, [{ text: 'OK', onPress: onOk }]);
+      } else {
+        Alert.alert(title, message);
+      }
+    }
+  };
+
   const handleUpgrade = async () => {
     // バリデーション
     if (!email.trim()) {
-      Alert.alert('エラー', 'メールアドレスを入力してください');
+      showAlert('エラー', 'メールアドレスを入力してください');
       return;
     }
 
     if (!password) {
-      Alert.alert('エラー', 'パスワードを入力してください');
+      showAlert('エラー', 'パスワードを入力してください');
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('エラー', 'パスワードが一致しません');
+      showAlert('エラー', 'パスワードが一致しません');
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('エラー', 'パスワードは6文字以上にしてください');
+      showAlert('エラー', 'パスワードは6文字以上にしてください');
       return;
     }
 
@@ -51,21 +64,16 @@ export default function UpgradeAccountScreen() {
     try {
       await upgradeAnonymousAccount(email.trim(), password);
 
-      Alert.alert(
+      showAlert(
         '成功',
         'アカウントの登録が完了しました！\nこれまでのデータは引き継がれています。',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              router.back();
-            },
-          },
-        ]
+        () => {
+          router.back();
+        }
       );
     } catch (error: any) {
       console.error('Upgrade failed:', error);
-      Alert.alert('エラー', error.message || 'アカウント登録に失敗しました');
+      showAlert('エラー', error.message || 'アカウント登録に失敗しました');
     } finally {
       setIsLoading(false);
     }

@@ -8,6 +8,7 @@ import {
   Pressable,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { grumbleService, GrumbleItem } from '../src/services/grumble.service';
 import { useUserStore } from '../src/stores/userStore';
@@ -37,7 +38,7 @@ export default function PurifiedGrumblesScreen() {
     select: (data) => ({
       ...data,
       // 成仏済みのみフィルタリング
-      grumbles: data.grumbles.filter((g: GrumbleItem) => g.is_purified)
+      grumbles: data?.grumbles?.filter((g: GrumbleItem) => g.is_purified) || []
     }),
   });
 
@@ -59,7 +60,7 @@ export default function PurifiedGrumblesScreen() {
   const grumbles = data?.grumbles || [];
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* ヘッダー */}
       <View style={styles.header}>
         <Pressable
@@ -115,7 +116,7 @@ export default function PurifiedGrumblesScreen() {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -129,8 +130,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 60,
-    paddingBottom: 16,
+    paddingVertical: 16,
     backgroundColor: '#FFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
