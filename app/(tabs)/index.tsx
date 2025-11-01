@@ -97,7 +97,7 @@ export default function TimelineScreen() {
         <Text style={styles.title}>タイムライン</Text>
         <View style={styles.headerButtons}>
           <Pressable
-            style={styles.filterButton}
+            style={styles.filterButtonStyle}
             onPress={() => setFilterModalVisible(true)}
           >
             <IconSymbol
