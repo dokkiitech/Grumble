@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "grumble",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "owner": "dokkiitech",
     "ios": {
       "supportsTablet": true,
