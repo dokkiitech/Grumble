@@ -1,67 +1,116 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Easing } from 'react-native';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 
 interface PurificationAnimationProps {
   onComplete?: () => void;
 }
 
 export const PurificationAnimation: React.FC<PurificationAnimationProps> = ({ onComplete }) => {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.5)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-  const translateYAnim = useRef(new Animated.Value(0)).current;
+  const mainOpacity = useRef(new Animated.Value(0)).current;
+  const flameOpacity = useRef(new Animated.Value(0)).current;
+  const flameScale = useRef(new Animated.Value(0.8)).current;
+  const smokeOpacity = useRef(new Animated.Value(0)).current;
+  const smokeScale = useRef(new Animated.Value(0.9)).current;
+  const ascendTranslate = useRef(new Animated.Value(0)).current;
+  const glowIntensity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // 成仏アニメーション: フェードイン + スケール + 回転 + 上昇
+    // 4段階: 炎 → 白煙 → 透明化 → 昇天
     Animated.sequence([
-      // フェードインとスケールアップ
       Animated.parallel([
-        Animated.timing(fadeAnim, {
+        Animated.timing(mainOpacity, {
           toValue: 1,
-          duration: 300,
+          duration: 250,
           easing: Easing.out(Easing.ease),
           useNativeDriver: true,
         }),
-        Animated.spring(scaleAnim, {
+        Animated.timing(flameOpacity, {
           toValue: 1,
-          friction: 5,
-          tension: 40,
+          duration: 400,
+          easing: Easing.out(Easing.ease),
           useNativeDriver: true,
         }),
-      ]),
-      // 少し待つ
-      Animated.delay(400),
-      // 上昇しながらフェードアウト
-      Animated.parallel([
-        Animated.timing(translateYAnim, {
-          toValue: -200,
-          duration: 800,
-          easing: Easing.in(Easing.ease),
+        Animated.timing(flameScale, {
+          toValue: 1.15,
+          duration: 500,
+          easing: Easing.out(Easing.ease),
           useNativeDriver: true,
         }),
-        Animated.timing(rotateAnim, {
+        Animated.timing(glowIntensity, {
           toValue: 1,
-          duration: 800,
+          duration: 450,
           easing: Easing.linear,
           useNativeDriver: true,
         }),
-        Animated.timing(fadeAnim, {
+      ]),
+      Animated.parallel([
+        Animated.timing(flameOpacity, {
           toValue: 0,
-          duration: 800,
+          duration: 350,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(smokeOpacity, {
+          toValue: 0.9,
+          duration: 420,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(smokeScale, {
+          toValue: 1.35,
+          duration: 420,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.parallel([
+        Animated.timing(mainOpacity, {
+          toValue: 0.4,
+          duration: 300,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(smokeOpacity, {
+          toValue: 0.4,
+          duration: 300,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.parallel([
+        Animated.timing(ascendTranslate, {
+          toValue: -120,
+          duration: 600,
+          easing: Easing.inOut(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(mainOpacity, {
+          toValue: 0,
+          duration: 600,
+          easing: Easing.in(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(smokeOpacity, {
+          toValue: 0,
+          duration: 600,
+          easing: Easing.in(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowIntensity, {
+          toValue: 0,
+          duration: 600,
           easing: Easing.in(Easing.ease),
           useNativeDriver: true,
         }),
       ]),
     ]).start(() => {
-      // アニメーション完了時のコールバック
       onComplete?.();
     });
-  }, []);
+  }, [ascendTranslate, flameOpacity, flameScale, glowIntensity, mainOpacity, onComplete, smokeOpacity, smokeScale]);
 
-  const rotate = rotateAnim.interpolate({
+  const glowShadow = glowIntensity.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
+    outputRange: [0, 25],
   });
 
   return (
@@ -70,21 +119,39 @@ export const PurificationAnimation: React.FC<PurificationAnimationProps> = ({ on
         style={[
           styles.animationContainer,
           {
-            opacity: fadeAnim,
-            transform: [
-              { scale: scaleAnim },
-              { translateY: translateYAnim },
-              { rotate },
-            ],
+            opacity: mainOpacity,
+            transform: [{ translateY: ascendTranslate }],
           },
         ]}
       >
-        {/* 成仏エフェクト */}
-        <View style={styles.iconContainer}>
-          <IconSymbol name="sparkles" size={80} color="#FFD700" />
-        </View>
-
-        {/* パーティクル効果 (簡易版) */}
+        <Animated.View
+          style={[
+            styles.flameAura,
+            {
+              opacity: flameOpacity,
+              transform: [{ scale: flameScale }],
+            },
+          ]}
+        />
+        <Animated.View
+          style={[
+            styles.smoke,
+            {
+              opacity: smokeOpacity,
+              transform: [{ scaleY: smokeScale }],
+            },
+          ]}
+        />
+        <Animated.View
+          style={[
+            styles.iconContainer,
+            {
+              shadowRadius: glowShadow,
+            },
+          ]}
+        >
+          <Text style={styles.jobutsuText}>🔥 成仏</Text>
+        </Animated.View>
         <View style={styles.particle1} />
         <View style={styles.particle2} />
         <View style={styles.particle3} />
@@ -96,49 +163,77 @@ export const PurificationAnimation: React.FC<PurificationAnimationProps> = ({ on
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
+    alignItems: 'stretch',
     justifyContent: 'center',
     pointerEvents: 'none',
+    zIndex: 3,
   },
   animationContainer: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconContainer: {
-    padding: 20,
+    paddingHorizontal: 32,
+    paddingVertical: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 100,
-    shadowColor: '#FFD700',
+    borderRadius: 32,
+    shadowColor: '#FFE66D',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOpacity: 0.9,
+    elevation: 12,
+  },
+  jobutsuText: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#FF5722',
+    letterSpacing: 4,
+  },
+  flameAura: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,87,34,0.55)',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 215, 0, 0.4)',
+    shadowColor: '#FF4500',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.6,
+    shadowRadius: 40,
+  },
+  smoke: {
+    position: 'absolute',
+    width: '120%',
+    height: '150%',
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.35)',
+    opacity: 0,
+    transform: [{ scaleY: 1.2 }],
   },
   particle1: {
     position: 'absolute',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FFD700',
-    top: -20,
-    left: -20,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: 'rgba(255,215,0,0.8)',
+    top: 24,
+    left: 32,
   },
   particle2: {
     position: 'absolute',
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#FFA500',
-    top: -30,
-    right: -10,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255,165,0,0.9)',
+    top: 12,
+    right: 48,
   },
   particle3: {
     position: 'absolute',
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#FF6B35',
-    bottom: -25,
-    left: 10,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,107,53,0.85)',
+    bottom: 16,
+    left: 54,
   },
 });

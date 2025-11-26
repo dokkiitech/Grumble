@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { GrumbleItem } from '../services/grumble.service';
-import { TOXIC_LEVEL_LABELS, PURIFICATION_THRESHOLD } from '../constants/config';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import * as Haptics from 'expo-haptics';
-import { VibeAnimation } from './VibeAnimation';
-import { JobutsuAnimation } from './JobutsuAnimation';
 import { AppFonts } from '@/constants/theme';
+import * as Haptics from 'expo-haptics';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
+import { PURIFICATION_THRESHOLD, TOXIC_LEVEL_LABELS } from '../constants/config';
+import { GrumbleItem } from '../services/grumble.service';
+import { PurificationAnimation } from './PurificationAnimation';
+import { VibeAnimation } from './VibeAnimation';
 
 interface GrumbleCardProps {
   grumble: GrumbleItem;
@@ -19,14 +19,7 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, 
   const [showAnimation, setShowAnimation] = useState(false);
   const [showJobutsuAnimation, setShowJobutsuAnimation] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
-
-  // デバッグ用ログ
-  console.log(`GrumbleCard ${grumble.grumble_id}:`, {
-    has_vibed: grumble.has_vibed,
-    vibe_count: grumble.vibe_count,
-    user_id: grumble.user_id,
-    currentUserId,
-  });
+  const cardBurnAnim = useRef(new Animated.Value(0)).current;
 
   // 自分の投稿かどうか
   const isOwnGrumble = currentUserId && grumble.user_id === currentUserId;
@@ -65,6 +58,18 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, 
     }
   };
 
+  useEffect(() => {
+    if (showJobutsuAnimation) {
+      cardBurnAnim.setValue(0);
+      Animated.timing(cardBurnAnim, {
+        toValue: 1,
+        duration: 1900,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [cardBurnAnim, showJobutsuAnimation]);
+
   const handleJobutsuComplete = () => {
     setShowJobutsuAnimation(false);
     onJobutsu?.(grumble.grumble_id);
@@ -80,11 +85,57 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, 
     return null;
   }
 
+  const cardTranslateY = cardBurnAnim.interpolate({
+    inputRange: [0, 0.6, 1],
+    outputRange: [0, -30, -150],
+  });
+
+  const cardScale = cardBurnAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0.9],
+  });
+
+  const cardGlowOpacity = cardBurnAnim.interpolate({
+    inputRange: [0, 0.3, 0.7, 1],
+    outputRange: [0, 0.75, 0.4, 0],
+  });
+
+  const cardGlowScale = cardBurnAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.25],
+  });
+
+  const cardContentFade = cardBurnAnim.interpolate({
+    inputRange: [0, 0.7, 1],
+    outputRange: [1, 0.5, 0],
+  });
+
   return (
-    <View style={styles.card}>
+    <Animated.View
+      style={[
+        styles.card,
+        showJobutsuAnimation && {
+          transform: [{ translateY: cardTranslateY }, { scale: cardScale }],
+          opacity: cardContentFade,
+        },
+      ]}
+    >
+      {showJobutsuAnimation && (
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.cardFlameOverlay,
+            {
+              opacity: cardGlowOpacity,
+              transform: [{ scale: cardGlowScale }],
+            },
+          ]}
+        />
+      )}
+
       {/* 成仏アニメーション */}
       {showJobutsuAnimation && (
-        <JobutsuAnimation onComplete={handleJobutsuComplete} />
+        <PurificationAnimation onComplete={handleJobutsuComplete} />
       )}
 
       {/* 毒レベルインジケーター */}
@@ -173,7 +224,7 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, 
           ) : null}
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -190,6 +241,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    position: 'relative',
+  },
+  cardFlameOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#FF6B2C',
+    borderRadius: 12,
+    zIndex: 2,
   },
   toxicIndicator: {
     width: 4,
