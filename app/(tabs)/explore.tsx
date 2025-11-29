@@ -375,7 +375,9 @@ const EventStartButton: React.FC<EventStartButtonProps> = ({ onPress }) => {
             end={{ x: 1, y: 1 }}
           >
             <IconSymbol name="flame.fill" size={32} color="#fff" />
-            <Text style={styles.startButtonText}>イベントスタート</Text>
+            <Text style={styles.startButtonText} numberOfLines={1}>
+              イベントスタート
+            </Text>
           </LinearGradient>
         </Animated.View>
       </Pressable>
@@ -570,11 +572,13 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 20,
     paddingHorizontal: 32,
+    flexWrap: 'nowrap',
   },
   startButtonText: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
     letterSpacing: 2,
+    flexShrink: 0,
   },
 });
