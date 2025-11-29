@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -15,21 +15,42 @@ import { grumbleService } from '@/src/services/grumble.service';
 
 export default function StatisticsScreen() {
   const router = useRouter();
+  const [range, setRange] = useState<'today' | 'week' | 'month'>('today');
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['statistics'],
     queryFn: () => grumbleService.getTimeline({ limit: 200 }),
   });
 
-  const grumbles = data?.grumbles || [];
-  const total = grumbles.length;
-  const purified = grumbles.filter((g) => g.is_purified).length;
+  const filtered = useMemo(() => {
+    if (!data?.grumbles) return [] as typeof data.grumbles | [];
+    const now = new Date();
+
+    const start = (() => {
+      const d = new Date(now);
+      d.setHours(0, 0, 0, 0);
+      if (range === 'today') return d;
+      if (range === 'week') {
+        const weekStart = new Date(d);
+        weekStart.setDate(d.getDate() - 6); // 過去7日分
+        return weekStart;
+      }
+      // month
+      const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
+      return monthStart;
+    })();
+
+    return data.grumbles.filter((g) => new Date(g.posted_at) >= start);
+  }, [data?.grumbles, range]);
+
+  const total = filtered.length;
+  const purified = filtered.filter((g) => g.is_purified).length;
   const unpurified = total - purified;
-  const totalVibes = grumbles.reduce((sum, g) => sum + g.vibe_count, 0);
+  const totalVibes = filtered.reduce((sum, g) => sum + g.vibe_count, 0);
 
   const toxicBuckets = [1, 2, 3, 4, 5].map((level) => ({
     level,
-    count: grumbles.filter((g) => g.toxic_level === level).length,
+    count: filtered.filter((g) => g.toxic_level === level).length,
   }));
 
   return (
@@ -43,6 +64,23 @@ export default function StatisticsScreen() {
         <Pressable style={styles.refreshButton} onPress={() => refetch()}>
           <IconSymbol name="arrow.clockwise" size={20} color="#333" />
         </Pressable>
+      </View>
+
+      {/* タブ */}
+      <View style={styles.tabs}>
+        {['today', 'week', 'month'].map((key) => {
+          const label = key === 'today' ? '今日' : key === 'week' ? '今週' : '今月';
+          const active = range === key;
+          return (
+            <Pressable
+              key={key}
+              style={[styles.tabButton, active && styles.tabButtonActive]}
+              onPress={() => setRange(key as typeof range)}
+            >
+              <Text style={[styles.tabText, active && styles.tabTextActive]}>{label}</Text>
+            </Pressable>
+          );
+        })}
       </View>
 
       {isLoading ? (
@@ -168,6 +206,32 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 16,
   },
+  tabs: {
+    flexDirection: 'row',
+    backgroundColor: '#FFF',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    gap: 8,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: '#F5F5F5',
+    alignItems: 'center',
+  },
+  tabButtonActive: {
+    backgroundColor: '#4CAF50',
+  },
+  tabText: {
+    color: '#666',
+    fontWeight: '600',
+  },
+  tabTextActive: {
+    color: '#FFF',
+  },
   cardRow: {
     flexDirection: 'row',
     gap: 12,
@@ -241,4 +305,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-
