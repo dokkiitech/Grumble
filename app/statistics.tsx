@@ -127,27 +127,11 @@ const levelColor = (level: number) => {
 
 function buildParams(range: 'today' | 'week' | 'month'): { params: StatsParams; tz: string } {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const now = new Date();
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
 
-  let from = new Date(start);
-  let to = new Date(start);
-
-  if (range === 'today') {
-    to.setDate(start.getDate() + 1);
-  } else if (range === 'week') {
-    from.setDate(start.getDate() - 6);
-    to.setDate(start.getDate() + 1);
-  } else {
-    from = new Date(start.getFullYear(), start.getMonth(), 1);
-    to = new Date(start.getFullYear(), start.getMonth() + 1, 1);
-  }
-
+  // サーバーに期間計算を任せる（from/to を送らない）
+  // granularity + tz のみ送信することで、本番環境で 500 が返るケースを回避する。
   const params: StatsParams = {
     granularity: range === 'month' ? 'month' : range === 'week' ? 'week' : 'day',
-    from: from.toISOString(),
-    to: to.toISOString(),
     tz,
   };
 
