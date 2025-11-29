@@ -466,3 +466,73 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /events/grumbles:
+    get:
+      summary: イベント投稿取得
+      description: お焚き上げイベント期間中（00:00〜11:59 JST）に、前日にアーカイブされた投稿を取得
+      operationId: getEventGrumbles
+      parameters:
+        - name: toxic_level_min
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+          description: 毒レベルの最小値
+        - name: toxic_level_max
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+          description: 毒レベルの最大値
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: 取得件数
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: オフセット
+      responses:
+        '200':
+          description: イベント投稿リスト
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - grumbles
+                  - total
+                  - is_event_active
+                  - event_date
+                properties:
+                  grumbles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Grumble'
+                    description: 投稿の配列（期間外は空配列）
+                  total:
+                    type: integer
+                    description: 条件に一致する総投稿数
+                  is_event_active:
+                    type: boolean
+                    description: イベント期間中かどうか
+                  event_date:
+                    type: string
+                    format: date
+                    description: 対象日（YYYY-MM-DD形式）
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
