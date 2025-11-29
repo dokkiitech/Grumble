@@ -112,6 +112,12 @@ export default function TimelineScreen() {
             />
           </Pressable>
           <Pressable
+            style={styles.statsButton}
+            onPress={() => router.push('/statistics')}
+          >
+            <IconSymbol name="chart.bar.fill" size={26} color="#4CAF50" />
+          </Pressable>
+          <Pressable
             style={styles.createButton}
             onPress={() => router.push('/create-grumble')}
           >
@@ -192,6 +198,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  statsButton: {
+    padding: 4,
   },
   createButton: {
     padding: 4,
