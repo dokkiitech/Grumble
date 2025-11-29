@@ -31,10 +31,9 @@ class StatsService {
     if (!token) {
       throw new Error('Not authenticated');
     }
-    apiClient.setAuthToken(token);
-
     const response = await api.get<GrumbleStatsBucket[]>('/stats/grumbles', {
       params,
+      headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
   }
@@ -47,10 +46,9 @@ class StatsService {
     if (!token) {
       throw new Error('Not authenticated');
     }
-    apiClient.setAuthToken(token);
-
     const response = await api.get<GrumbleStatsToxicBucket[]>('/stats/grumbles/toxic', {
       params,
+      headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
   }
