@@ -11,47 +11,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { grumbleService } from '@/src/services/grumble.service';
+import { statsService, StatsParams, GrumbleStatsBucket } from '@/src/services/stats.service';
 
 export default function StatisticsScreen() {
   const router = useRouter();
   const [range, setRange] = useState<'today' | 'week' | 'month'>('today');
 
+  const { params } = useMemo(() => buildParams(range), [range]);
+
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['statistics'],
-    queryFn: () => grumbleService.getTimeline({ limit: 200 }),
+    queryKey: ['statistics', params],
+    queryFn: () => statsService.getGrumbleStats(params),
   });
 
-  const filtered = useMemo(() => {
-    if (!data?.grumbles) return [] as typeof data.grumbles | [];
-    const now = new Date();
-
-    const start = (() => {
-      const d = new Date(now);
-      d.setHours(0, 0, 0, 0);
-      if (range === 'today') return d;
-      if (range === 'week') {
-        const weekStart = new Date(d);
-        weekStart.setDate(d.getDate() - 6); // 過去7日分
-        return weekStart;
-      }
-      // month
-      const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
-      return monthStart;
-    })();
-
-    return data.grumbles.filter((g) => new Date(g.posted_at) >= start);
-  }, [data?.grumbles, range]);
-
-  const total = filtered.length;
-  const purified = filtered.filter((g) => g.is_purified).length;
-  const unpurified = total - purified;
-  const totalVibes = filtered.reduce((sum, g) => sum + g.vibe_count, 0);
-
-  const toxicBuckets = [1, 2, 3, 4, 5].map((level) => ({
-    level,
-    count: filtered.filter((g) => g.toxic_level === level).length,
-  }));
+  const aggregated = useMemo(() => reduceBuckets(data || []), [data]);
+  const { total, purified, unpurified, totalVibes, toxicBuckets } = aggregated;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
@@ -150,6 +124,52 @@ const levelColor = (level: number) => {
   const colors = ['#4CAF50', '#8BC34A', '#FFC107', '#FF9800', '#F44336'];
   return colors[level - 1] || '#9E9E9E';
 };
+
+function buildParams(range: 'today' | 'week' | 'month'): { params: StatsParams; tz: string } {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const now = new Date();
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+
+  let from = new Date(start);
+  let to = new Date(start);
+
+  if (range === 'today') {
+    to.setDate(start.getDate() + 1);
+  } else if (range === 'week') {
+    from.setDate(start.getDate() - 6);
+    to.setDate(start.getDate() + 1);
+  } else {
+    from = new Date(start.getFullYear(), start.getMonth(), 1);
+    to = new Date(start.getFullYear(), start.getMonth() + 1, 1);
+  }
+
+  const params: StatsParams = {
+    granularity: range === 'month' ? 'month' : range === 'week' ? 'week' : 'day',
+    from: from.toISOString(),
+    to: to.toISOString(),
+    tz,
+  };
+
+  return { params, tz };
+}
+
+function reduceBuckets(buckets: GrumbleStatsBucket[]) {
+  const totals = buckets.reduce(
+    (acc, b) => {
+      acc.total += b.purified_count + b.unpurified_count;
+      acc.purified += b.purified_count;
+      acc.unpurified += b.unpurified_count;
+      acc.totalVibes += b.total_vibes;
+      return acc;
+    },
+    { total: 0, purified: 0, unpurified: 0, totalVibes: 0 }
+  );
+
+  const toxicBuckets = [1, 2, 3, 4, 5].map((level) => ({ level, count: 0 }));
+
+  return { ...totals, toxicBuckets };
+}
 
 const styles = StyleSheet.create({
   container: {
