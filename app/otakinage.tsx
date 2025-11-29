@@ -635,24 +635,28 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
+    marginBottom: 16, // 下の投稿エリアとの間にスペースを開ける
   },
   burnAllButton: {
-    backgroundColor: '#333',
+    backgroundColor: '#fff',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   burnAllButtonPressed: {
     opacity: 0.8,
     transform: [{ scale: 0.95 }],
+    backgroundColor: '#f5f5f5',
   },
   burnAllButtonText: {
-    color: '#fff',
+    color: '#000',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -662,7 +666,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     marginTop: -20,
-    paddingTop: 20,
+    paddingTop: 40, // ボタンとの間にスペースを確保（20 → 40に増加）
   },
   cardsContainer: {
     padding: 16,
@@ -783,7 +787,7 @@ const styles = StyleSheet.create({
     elevation: 16,
   },
   completionMessage: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
