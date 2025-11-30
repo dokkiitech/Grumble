@@ -3,7 +3,7 @@ import { AppFonts } from '@/constants/theme';
 import * as Haptics from 'expo-haptics';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
-import { PURIFICATION_THRESHOLD, TOXIC_LEVEL_LABELS } from '../constants/config';
+import { TOXIC_LEVEL_LABELS } from '../constants/config';
 import { GrumbleItem } from '../services/grumble.service';
 import { PurificationAnimation } from './PurificationAnimation';
 import { VibeAnimation } from './VibeAnimation';
@@ -28,7 +28,7 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, 
   const canVibe = !isOwnGrumble && !grumble.has_vibed;
 
   // 成仏ボタンを押せるかどうか（自分の投稿のみ）
-  const canJobutsu = isOwnGrumble && !grumble.is_purified && grumble.vibe_count >= PURIFICATION_THRESHOLD;
+  const canJobutsu = isOwnGrumble && !grumble.is_purified && grumble.vibe_count >= grumble.purified_threshold;
 
   // 成仏ボタンを表示するかどうか（自分の投稿のみ）
   const showJobutsuButton = isOwnGrumble && !grumble.is_purified;
@@ -51,7 +51,7 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, 
   };
 
   const handleJobutsuPress = () => {
-    if (!grumble.is_purified && grumble.vibe_count >= PURIFICATION_THRESHOLD) {
+    if (!grumble.is_purified && grumble.vibe_count >= grumble.purified_threshold) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setShowJobutsuAnimation(true);
       setIsRemoving(true);
@@ -218,7 +218,7 @@ export const GrumbleCard: React.FC<GrumbleCardProps> = ({ grumble, onVibePress, 
                 styles.jobutsuButtonText,
                 !canJobutsu && styles.jobutsuButtonTextDisabled
               ]}>
-                成仏させる {!canJobutsu && `(${grumble.vibe_count}/${PURIFICATION_THRESHOLD})`}
+                成仏させる {!canJobutsu && `(${grumble.vibe_count}/${grumble.purified_threshold})`}
               </Text>
             </Pressable>
           ) : null}

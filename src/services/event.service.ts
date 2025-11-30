@@ -5,7 +5,7 @@ import { GrumbleItem } from './grumble.service';
 
 type EventsResponse = paths['/events']['get']['responses']['200']['content']['application/json'];
 type EventResponse = paths['/events/{event_id}']['get']['responses']['200']['content']['application/json'];
-type EventItem = EventsResponse['events'][number];
+type EventItem = NonNullable<EventsResponse['events']>[number];
 
 export interface EventGrumblesResponse {
   grumbles: GrumbleItem[];

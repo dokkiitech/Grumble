@@ -28,6 +28,7 @@ export default function CreateGrumbleScreen() {
       grumbleService.createGrumble({
         content,
         toxic_level: toxicLevel,
+        is_event_grumble: false,
       }),
     onSuccess: () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

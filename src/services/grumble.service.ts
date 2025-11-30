@@ -3,7 +3,7 @@ import { paths } from '../types/api';
 import { mockGrumbleService } from '../mocks/services';
 
 type GrumbleResponse = paths['/grumbles']['get']['responses']['200']['content']['application/json'];
-type GrumbleItem = GrumbleResponse['grumbles'][number];
+type GrumbleItem = NonNullable<GrumbleResponse['grumbles']>[number];
 type CreateGrumbleRequest = paths['/grumbles']['post']['requestBody']['content']['application/json'];
 type CreateGrumbleResponse = paths['/grumbles']['post']['responses']['201']['content']['application/json'];
 
