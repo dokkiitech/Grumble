@@ -48,6 +48,8 @@ const MAPPING = {
   'hand.thumbsup.fill': 'thumb-up',
   'line.3.horizontal.decrease.circle': 'filter-list',
   'line.3.horizontal.decrease.circle.fill': 'filter-list',
+  'chart.bar.fill': 'insert-chart',
+  'chart.bar': 'insert-chart',
 } as IconMapping;
 
 /**
