@@ -32,7 +32,7 @@ const isEventTime = (): boolean => {
 };
 
 export default function EventScreen() {
-  const { isAuthenticated } = useUserStore();
+  const { isAuthenticated, user } = useUserStore();
   const router = useRouter();
   const [isEventActive, setIsEventActive] = useState(isEventTime());
 
@@ -42,15 +42,29 @@ export default function EventScreen() {
     enabled: isAuthenticated, // 認証完了後のみクエリを実行
   });
 
+  // 前日の投稿データを取得（イベントスタートボタンの表示判定用）
+  const { data: eventGrumblesData, isLoading: isLoadingEventGrumbles } = useQuery({
+    queryKey: ['event-grumbles', user?.user_id],
+    queryFn: () => eventService.getEventGrumbles({}, user?.user_id),
+    enabled: isAuthenticated && !!user?.user_id && (isEventTime() || __DEV__), // 開発環境では常に取得
+  });
+
   const activeEvent = data?.events?.find((e) => e.is_active);
 
-  // 時間判定を定期的に更新（1分ごと）
+  // 時間判定と投稿データの有無を定期的に更新（1分ごと）
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsEventActive(isEventTime());
-    }, 60000);
+    const updateEventActive = () => {
+      const isTimeActive = isEventTime();
+      // 時間が0:00~12:00の間で、かつ前日の投稿がある場合のみ表示
+      const hasPreviousDayPosts = (eventGrumblesData?.grumbles?.length ?? 0) > 0;
+      
+      setIsEventActive(isTimeActive && hasPreviousDayPosts);
+    };
+
+    updateEventActive();
+    const interval = setInterval(updateEventActive, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [eventGrumblesData, user, isAuthenticated]);
 
   const handleEventStart = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

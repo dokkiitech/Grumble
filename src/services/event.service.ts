@@ -3,6 +3,9 @@ import { paths } from '../types/api';
 import api from './api';
 import { GrumbleItem } from './grumble.service';
 
+// __DEV__ はグローバル変数なので、型定義が必要な場合のみ
+declare const __DEV__: boolean;
+
 type EventsResponse = paths['/events']['get']['responses']['200']['content']['application/json'];
 type EventResponse = paths['/events/{event_id}']['get']['responses']['200']['content']['application/json'];
 type EventItem = EventsResponse['events'][number];
@@ -62,14 +65,49 @@ class EventService {
   /**
    * イベント用投稿取得（前日の投稿）
    */
-  async getEventGrumbles(params: EventGrumblesParams = {}): Promise<EventGrumblesResponse> {
+  async getEventGrumbles(params: EventGrumblesParams = {}, userId?: string): Promise<EventGrumblesResponse> {
     // ============================================
     // 【モック実装】本番環境では削除
     // ============================================
-    // USE_MOCK_API が true の場合、空のレスポンスを返す
+    // 開発環境でのUI確認用のモックデータ
     // バックエンドと連携する際は、以下の if ブロック全体を削除
     // ============================================
-    if (USE_MOCK_API) {
+    if (USE_MOCK_API || (typeof __DEV__ !== 'undefined' && __DEV__)) {
+      // 開発環境では、otakinage.tsxと同じモックデータを返す
+      if (userId) {
+        const mockGrumbles: GrumbleItem[] = [
+          {
+            grumble_id: 'mock-1',
+            user_id: userId,
+            content: 'MacBook Pro 高すぎ！',
+            toxic_level: 5,
+            vibe_count: 12,
+            is_purified: false,
+            posted_at: new Date().toISOString(),
+            expires_at: new Date().toISOString(),
+            is_event_grumble: false,
+            has_vibed: false,
+          },
+          {
+            grumble_id: 'mock-2',
+            user_id: userId,
+            content: 'シフト削られたー...',
+            toxic_level: 2,
+            vibe_count: 4,
+            is_purified: false,
+            posted_at: new Date().toISOString(),
+            expires_at: new Date().toISOString(),
+            is_event_grumble: false,
+            has_vibed: false,
+          },
+        ];
+        return {
+          grumbles: mockGrumbles,
+          total: mockGrumbles.length,
+          is_event_active: true,
+          event_date: new Date().toISOString().split('T')[0],
+        };
+      }
       return {
         grumbles: [],
         total: 0,
