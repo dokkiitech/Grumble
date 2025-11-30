@@ -6,11 +6,11 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import ReanimatedAnimated, {
-    runOnJS,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-    withTiming,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 
 interface DraggableGrumbleCardProps {
@@ -18,6 +18,10 @@ interface DraggableGrumbleCardProps {
   grumbleId: string;
   onBurn: (grumbleId: string) => void;
   isBurning: boolean;
+  onDragStart?: (grumbleId: string, initialX: number, initialY: number) => void;
+  onDragUpdate?: (grumbleId: string, x: number, y: number) => void;
+  onDragEnd?: (grumbleId: string) => void;
+  isDragging?: boolean;
 }
 
 export const DraggableGrumbleCard: React.FC<DraggableGrumbleCardProps> = ({
@@ -25,12 +29,20 @@ export const DraggableGrumbleCard: React.FC<DraggableGrumbleCardProps> = ({
   grumbleId,
   onBurn,
   isBurning,
+  onDragStart,
+  onDragUpdate,
+  onDragEnd,
+  isDragging = false,
 }) => {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
   const startY = useSharedValue(0);
+  const startX = useSharedValue(0);
+  const initialAbsoluteX = useSharedValue(0);
+  const initialAbsoluteY = useSharedValue(0);
+  const isDraggingShared = useSharedValue(false);
 
   // runOnJSで安全に実行するためのラッパー関数
   const safeOnBurn = () => {
@@ -41,16 +53,49 @@ export const DraggableGrumbleCard: React.FC<DraggableGrumbleCardProps> = ({
     }
   };
 
+  const safeOnDragStart = (x: number, y: number) => {
+    if (onDragStart) {
+      onDragStart(grumbleId, x, y);
+    }
+  };
+
+  const safeOnDragUpdate = (x: number, y: number) => {
+    if (onDragUpdate && isDraggingShared.value) {
+      onDragUpdate(grumbleId, x, y);
+    }
+  };
+
+  const safeOnDragEnd = () => {
+    if (onDragEnd) {
+      onDragEnd(grumbleId);
+    }
+  };
+
   const panGesture = Gesture.Pan()
     .onStart((e) => {
       startY.value = e.absoluteY;
+      startX.value = e.absoluteX;
+      initialAbsoluteX.value = e.absoluteX;
+      initialAbsoluteY.value = e.absoluteY;
       scale.value = withSpring(1.1);
+      opacity.value = 0; // ドラッグ開始時に即座に非表示にする
+      isDraggingShared.value = true;
+      runOnJS(safeOnDragStart)(e.absoluteX, e.absoluteY);
     })
     .onUpdate((e) => {
       translateX.value = e.translationX;
       translateY.value = e.translationY;
+      // 初回のみrunOnJSを呼び出し、その後はスムーズに動作
+      if (isDraggingShared.value) {
+        const currentX = initialAbsoluteX.value + e.translationX;
+        const currentY = initialAbsoluteY.value + e.translationY;
+        runOnJS(safeOnDragUpdate)(currentX, currentY);
+      }
     })
     .onEnd((e) => {
+      isDraggingShared.value = false;
+      runOnJS(safeOnDragEnd)();
+      
       // 現在の絶対Y座標を計算（開始位置 + 移動距離）
       const currentAbsoluteY = startY.value + e.translationY;
 
@@ -75,6 +120,7 @@ export const DraggableGrumbleCard: React.FC<DraggableGrumbleCardProps> = ({
         translateX.value = withSpring(0);
         translateY.value = withSpring(0);
         scale.value = withSpring(1);
+        opacity.value = withTiming(1, { duration: 200 }); // 元の位置に戻る時は表示する
       }
     })
     .activeOffsetY([-10, 10]) // 縦方向の移動が10px以上でジェスチャーを開始
