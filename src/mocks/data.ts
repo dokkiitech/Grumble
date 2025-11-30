@@ -13,6 +13,7 @@ export const mockGrumbles: GrumbleItem[] = [
     content: '今日の会議、3時間も何の結論も出なかった...時間返して欲しい',
     toxic_level: 3,
     vibe_count: 9,
+    purified_threshold: 2,
     is_purified: false,
     posted_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30分前
     expires_at: new Date(Date.now() + 1000 * 60 * 60 * 23.5).toISOString(), // 23.5時間後
@@ -25,6 +26,7 @@ export const mockGrumbles: GrumbleItem[] = [
     content: '電車で隣の人、イヤホンから音漏れしまくり。しかも音楽のセンスが絶望的...',
     toxic_level: 2,
     vibe_count: 9,
+    purified_threshold: 2,
     is_purified: false,
     posted_at: new Date(Date.now() - 1000 * 60 * 60).toISOString(), // 1時間前
     expires_at: new Date(Date.now() + 1000 * 60 * 60 * 23).toISOString(),
@@ -37,6 +39,7 @@ export const mockGrumbles: GrumbleItem[] = [
     content: 'コンビニでレジ待ち10分。店員さん1人しかいないとか、人手不足どうにかして',
     toxic_level: 2,
     vibe_count: 9,
+    purified_threshold: 2,
     is_purified: false,
     posted_at: new Date(Date.now() - 1000 * 60 * 90).toISOString(), // 1.5時間前
     expires_at: new Date(Date.now() + 1000 * 60 * 60 * 22.5).toISOString(),
@@ -49,6 +52,7 @@ export const mockGrumbles: GrumbleItem[] = [
     content: '上司の理不尽な指示。昨日と真逆のこと言ってるんだけど!?メモ取ってるのに意味ない',
     toxic_level: 4,
     vibe_count: 9,
+    purified_threshold: 2,
     is_purified: false,
     posted_at: new Date(Date.now() - 1000 * 60 * 120).toISOString(), // 2時間前
     expires_at: new Date(Date.now() + 1000 * 60 * 60 * 22).toISOString(),
@@ -61,6 +65,7 @@ export const mockGrumbles: GrumbleItem[] = [
     content: '昨日のプレゼン、緊張しすぎて声が震えた...でも無事終わって良かった',
     toxic_level: 2,
     vibe_count: 9,
+    purified_threshold: 2,
     is_purified: true, // 成仏済み
     posted_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1日前
     expires_at: new Date(Date.now() - 1000 * 60 * 60 * 0.5).toISOString(),
@@ -73,6 +78,7 @@ export const mockGrumbles: GrumbleItem[] = [
     content: '締め切りギリギリで資料作成。徹夜したけど何とか間に合った',
     toxic_level: 3,
     vibe_count: 9,
+    purified_threshold: 2,
     is_purified: true, // 成仏済み
     posted_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(), // 2日前
     expires_at: new Date(Date.now() - 1000 * 60 * 60 * 24.5).toISOString(),
@@ -85,6 +91,7 @@ export const mockGrumbles: GrumbleItem[] = [
     content: 'Wi-Fiが遅すぎて仕事にならない。在宅勤務の意味ない',
     toxic_level: 3,
     vibe_count: 9,
+    purified_threshold: 2,
     is_purified: true, // 成仏済み（他ユーザー）
     posted_at: new Date(Date.now() - 1000 * 60 * 180).toISOString(), // 3時間前
     expires_at: new Date(Date.now() + 1000 * 60 * 60 * 21).toISOString(),
@@ -97,6 +104,7 @@ export const mockGrumbles: GrumbleItem[] = [
     content: 'スーパーのレジで小銭を1枚ずつ数えてる人...後ろ並んでるんだけど',
     toxic_level: 1,
     vibe_count: 9,
+    purified_threshold: 2,
     is_purified: false,
     posted_at: new Date(Date.now() - 1000 * 60 * 240).toISOString(), // 4時間前
     expires_at: new Date(Date.now() + 1000 * 60 * 60 * 20).toISOString(),
@@ -109,6 +117,7 @@ export const mockGrumbles: GrumbleItem[] = [
     content: 'プロジェクトのデッドラインが急に前倒し。計画性って言葉知ってる!?',
     toxic_level: 5,
     vibe_count: 9,
+    purified_threshold: 2,
     is_purified: false,
     posted_at: new Date(Date.now() - 1000 * 60 * 300).toISOString(), // 5時間前
     expires_at: new Date(Date.now() + 1000 * 60 * 60 * 19).toISOString(),
@@ -121,6 +130,7 @@ export const mockGrumbles: GrumbleItem[] = [
     content: '夜中の2時に上司からLINE。緊急じゃないなら明日でいいでしょ',
     toxic_level: 4,
     vibe_count: 9,
+    purified_threshold: 2,
     is_purified: false,
     posted_at: new Date(Date.now() - 1000 * 60 * 360).toISOString(), // 6時間前
     expires_at: new Date(Date.now() + 1000 * 60 * 60 * 18).toISOString(),
@@ -133,6 +143,7 @@ export const mockGrumbles: GrumbleItem[] = [
     content: 'エアコンの設定温度で毎日バトル。寒いんだって!',
     toxic_level: 2,
     vibe_count: 9,
+    purified_threshold: 2,
     is_purified: false,
     posted_at: new Date(Date.now() - 1000 * 60 * 420).toISOString(), // 7時間前
     expires_at: new Date(Date.now() + 1000 * 60 * 60 * 17).toISOString(),
@@ -145,6 +156,7 @@ export const mockGrumbles: GrumbleItem[] = [
     content: '友達の自慢話が30分続いてる...いつ終わるの',
     toxic_level: 1,
     vibe_count: 9,
+    purified_threshold: 2,
     is_purified: false,
     posted_at: new Date(Date.now() - 1000 * 60 * 480).toISOString(), // 8時間前
     expires_at: new Date(Date.now() + 1000 * 60 * 60 * 16).toISOString(),
@@ -183,6 +195,7 @@ export const addMockGrumble = (content: string, toxicLevel: number): GrumbleItem
     content,
     toxic_level: toxicLevel,
     vibe_count: 0,
+    purified_threshold: 2,
     is_purified: false,
     posted_at: new Date().toISOString(),
     expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),

@@ -4,6 +4,46 @@
  */
 
 export interface paths {
+    "/stats/grumbles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 投稿統計取得
+         * @description 日/週/月ごとの成仏済み・未成仏・いいね数を返す
+         */
+        get: operations["getGrumbleStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stats/grumbles/toxic": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 投稿統計取得（毒度別）
+         * @description 日/週/月ごとの毒度別成仏・未成仏・いいね数を返す
+         */
+        get: operations["getGrumbleStatsToxic"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/grumbles": {
         parameters: {
             query?: never;
@@ -108,6 +148,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/events/grumbles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * イベント投稿取得
+         * @description 24:00〜12:00の時間帯にアーカイブされた前日の投稿を取得
+         */
+        get: operations["getEventGrumbles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -129,6 +189,13 @@ export interface components {
             toxic_level: number;
             /** @description 「わかる…」の総数 */
             vibe_count: number;
+            /**
+             * @description 「わかる…」の数に応じたランク
+             * @enum {string}
+             */
+            vibe_rank?: "見習い行者" | "弥勒" | "地蔵" | "大菩薩";
+            /** @description 成仏するまでに必要な「わかる…」の数 */
+            purified_threshold: number;
             /** @description 成仏フラグ */
             is_purified: boolean;
             /**
@@ -151,6 +218,8 @@ export interface components {
             content: string;
             /** @description 毒レベル（1〜5） */
             toxic_level: number;
+            /** @description 成仏するまでに必要な「わかる…」の数（オプション、未指定の場合はデフォルト値） */
+            purified_threshold?: number;
             /**
              * @description イベント投稿か否か
              * @default false
@@ -189,6 +258,11 @@ export interface components {
             user_id: string;
             /** @description 徳ポイント */
             virtue_points: number;
+            /**
+             * @description わかる数（徳ポイント）に応じたランク
+             * @enum {string}
+             */
+            virtue_rank?: "見習い行者" | "弥勒" | "地蔵" | "大菩薩";
             /**
              * Format: date-time
              * @description ユーザー作成日時
@@ -229,11 +303,8 @@ export interface components {
             toxic_level_min?: number;
             /** @description 毒レベルの最大値 */
             toxic_level_max?: number;
-            /**
-             * @description 未成仏のみ表示
-             * @default false
-             */
-            unpurified_only: boolean;
+            /** @description 成仏済みかどうかで絞り込み（未指定の場合はすべて） */
+            is_purified?: boolean;
             /**
              * @description 取得件数
              * @default 20
@@ -245,10 +316,44 @@ export interface components {
              */
             offset: number;
         };
+        GrumbleStatsBucket: {
+            /**
+             * Format: date-time
+             * @description 集計バケット開始時刻（UTC）
+             */
+            bucket: string;
+            /** @description 成仏済み件数 */
+            purified_count: number;
+            /** @description 未成仏件数 */
+            unpurified_count: number;
+            /** @description いいね（vibe_count）の合計 */
+            total_vibes: number;
+        };
+        GrumbleStatsToxicBucket: {
+            /**
+             * Format: date-time
+             * @description 集計バケット開始時刻（UTC）
+             */
+            bucket: string;
+            /** @description 毒度レベル */
+            toxic_level: number;
+            /** @description 成仏済み件数 */
+            purified_count: number;
+            /** @description 未成仏件数 */
+            unpurified_count: number;
+            /** @description いいね（vibe_count）の合計 */
+            total_vibes: number;
+        };
         ErrorResponse: {
-            /** @description エラーコード */
+            /**
+             * @description エラーコード
+             * @example DUPLICATE_VIBE
+             */
             error: string;
-            /** @description エラーメッセージ */
+            /**
+             * @description エラーメッセージ
+             * @example 既にこの投稿に「わかる…」を送信しています
+             */
             message: string;
         };
     };
@@ -260,12 +365,138 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getGrumbleStats: {
+        parameters: {
+            query: {
+                /**
+                 * @description 集計粒度
+                 * @example day
+                 */
+                granularity: "day" | "week" | "month";
+                /**
+                 * @description 期間開始（省略時はバックエンドがデフォルト期間を設定）
+                 * @example 2025-11-01T00:00:00Z
+                 */
+                from?: string;
+                /**
+                 * @description 期間終了（非含む。省略時はデフォルト期間を設定）
+                 * @example 2025-11-08T00:00:00Z
+                 */
+                to?: string;
+                /**
+                 * @description タイムゾーン（例: Asia/Tokyo）。未指定はサーバ既定
+                 * @example Asia/Tokyo
+                 */
+                tz?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 統計結果 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrumbleStatsBucket"][];
+                };
+            };
+            /** @description 不正なリクエスト */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 認証エラー */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getGrumbleStatsToxic: {
+        parameters: {
+            query: {
+                /**
+                 * @description 集計粒度
+                 * @example week
+                 */
+                granularity: "day" | "week" | "month";
+                /**
+                 * @description 期間開始（省略時はバックエンドがデフォルト期間を設定）
+                 * @example 2025-10-01T00:00:00Z
+                 */
+                from?: string;
+                /**
+                 * @description 期間終了（非含む。省略時はデフォルト期間を設定）
+                 * @example 2025-11-01T00:00:00Z
+                 */
+                to?: string;
+                /**
+                 * @description タイムゾーン（例: Asia/Tokyo）。未指定はサーバ既定
+                 * @example Asia/Tokyo
+                 */
+                tz?: string;
+                /**
+                 * @description 毒度レベルを指定するとそのレベルのみを返す
+                 * @example 3
+                 */
+                toxic_level?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 毒度別統計結果 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrumbleStatsToxicBucket"][];
+                };
+            };
+            /** @description 不正なリクエスト */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 認証エラー */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getGrumbles: {
         parameters: {
             query?: {
+                /** @description 取得対象のユーザーID */
+                user_id?: string;
                 toxic_level_min?: number;
                 toxic_level_max?: number;
-                unpurified_only?: boolean;
+                /** @description 成仏済みかどうかで絞り込み */
+                is_purified?: boolean;
                 limit?: number;
                 offset?: number;
             };
@@ -290,6 +521,15 @@ export interface operations {
             };
             /** @description リクエストエラー */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 認証エラー */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -330,6 +570,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description 認証エラー */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
     };
     addVibe: {
@@ -362,8 +611,17 @@ export interface operations {
                     "application/json": components["schemas"]["Vibe"];
                 };
             };
-            /** @description リクエストエラー（既に押済みなど） */
+            /** @description リクエストエラー（バリデーションエラーなど） */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 認証エラー */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -373,6 +631,15 @@ export interface operations {
             };
             /** @description 投稿が見つからない */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 既にvibeを送信済み（競合） */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -400,6 +667,15 @@ export interface operations {
                     "application/json": components["schemas"]["AnonymousUser"];
                 };
             };
+            /** @description 認証エラー */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
     };
     getEvents: {
@@ -424,6 +700,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description 認証エラー */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
     };
     getEvent: {
@@ -446,8 +731,67 @@ export interface operations {
                     "application/json": components["schemas"]["Event"];
                 };
             };
+            /** @description 認証エラー */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description イベントが見つからない */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getEventGrumbles: {
+        parameters: {
+            query?: {
+                /** @description 毒レベルの最小値 */
+                toxic_level_min?: number;
+                /** @description 毒レベルの最大値 */
+                toxic_level_max?: number;
+                /** @description 取得件数 */
+                limit?: number;
+                /** @description オフセット */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description イベント投稿リスト */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description イベント投稿リスト */
+                        grumbles: components["schemas"]["Grumble"][];
+                        /** @description 総件数 */
+                        total: number;
+                        /** @description イベント期間中（24:00〜12:00）かどうか */
+                        is_event_active: boolean;
+                        /**
+                         * Format: date
+                         * @description イベント対象日（YYYY-MM-DD）
+                         */
+                        event_date: string;
+                    };
+                };
+            };
+            /** @description 認証エラー */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
