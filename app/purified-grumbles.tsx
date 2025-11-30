@@ -1,21 +1,21 @@
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Colors } from '@/constants/theme';
+import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   FlatList,
-  RefreshControl,
   Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
-import { grumbleService, GrumbleItem } from '../src/services/grumble.service';
-import { useUserStore } from '../src/stores/userStore';
 import { GrumbleCard } from '../src/components/GrumbleCard';
-import { Colors } from '@/constants/theme';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { MOCK_CURRENT_USER_ID } from '../src/mocks/data';
+import { grumbleService } from '../src/services/grumble.service';
+import { useUserStore } from '../src/stores/userStore';
 
 export default function PurifiedGrumblesScreen() {
   const router = useRouter();
@@ -32,7 +32,8 @@ export default function PurifiedGrumblesScreen() {
     queryKey: ['purified-grumbles', currentUserId],
     queryFn: () => grumbleService.getTimeline({
       user_id: currentUserId,
-      is_purified: true // 成仏済みのみ取得
+      is_purified: false // 成仏済みのみ取得
+
     }),
     enabled: isAuthenticated && !!currentUserId,
   });
